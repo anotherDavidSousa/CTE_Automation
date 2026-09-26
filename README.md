@@ -1,4 +1,14 @@
 # CTE Automation
+### Clean public version republished for demonstration purposes only; the original version is private, with releases and updates continuing through April 2026.
+### Versão pública republicada e limpa apenas para demonstração, a versão original se encontrada privada com release e atualizações até Abril de 2026
+
+---
+This was my first project addressing a real-world problem; the app was used by over eight employees at Fertran and became essential to their workflow, as it handled the core tasks of the administrative assistants. The Fertran branch where I worked managed short-haul waste transport operations that generated around 300 trip invoices daily; the app enabled employees to eliminate this daily workload, freeing up time to focus on operational improvements. 🚀
+
+Esté foi meu primeiro estudo e desenvolvimento em área em um problema real, o app foi usado por mais de 8 colaboradores na empresa Fertran causando uma grande dependencia pois lidava com a atividade central dos auxiliares administrativos a Filial da Fertran onde trabalhei tinham fluxos curtos de transporte de residuos o que gerava em torno de 300 notas fiscais de viagem diariamente, com esse app os colaboradores conseguiram eliminar as demandas diariamente tendo tempo livre para focar nas melhorias da operação.🚀
+
+
+
 
 A desktop application that assists the creation of electronic transport documents from invoice XML files. The public version uses fictional companies, identifiers, routes, products, and business rules.
 
