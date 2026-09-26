@@ -58,8 +58,9 @@ O resultado foi um fluxo mais rápido e consistente. A aplicação não substitu
 
 ## Interface / Interface
 
-docs/Interface1.png
-docs/interface_modal.png
+![Main interface / Interface principal](docs/Interface1.png)
+
+![Modal interface / Interface modal](docs/interface_modal.png)
 
 
 ## Main capabilities / Principais capacidades
