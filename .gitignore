@@ -1,0 +1,38 @@
+# Evitar arquivos de ambiente virtual
+env/
+venv/
+.venv/
+.env/
+# Cache do Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Configurações específicas do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de log
+*.log
+
+# Arquivos do editor/IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Arquivos de build
+build/
+dist/
+*.egg-info/
+
+# Arquivos temporários ou desnecessários
+*.tmp
+*.bak
+*.swp
+*.~*
+
+# Configurações de ambiente
+.env
+.env.local
+.venv

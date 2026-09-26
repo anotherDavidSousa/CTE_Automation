@@ -1,0 +1,69 @@
+{
+    "regras": [
+        {
+            "cnpj_emit": "90000000000015",
+            "cnpj_dest": "90000000000016",
+            "campo_valor": "vProd"
+        },
+        {
+            "cnpj_emit": "90000000000075",
+            "cnpj_dest": "90000000000015",
+            "campo_valor": "vProd"
+        },
+        {
+            "cnpj_emit": "90000000000067",
+            "cnpj_dest": "90000000000075",
+            "campo_valor": "vProd"
+        },
+        {
+            "cnpj_emit": "90000000000073",
+            "cnpj_dest": "90000000000021",
+            "campo_valor": "vProd"
+        },
+        {
+            "cnpj_emit": "90000000000071",
+            "cnpj_dest": "90000000000033",
+            "campo_valor": "vProd",
+            "Rota": "DEMO_RULE_001"
+        },
+        {
+            "cnpj_emit": "90000000000080",
+            "cnpj_dest": "90000000000084",
+            "campo_valor": "vProd",
+            "Rota": "DEMO_RULE_002"
+        },
+        {
+            "cnpj_emit": "90000000000015",
+            "cnpj_dest": "90000000000014",
+            "campo_valor": "vProd",
+            "Rota": "DEMO_RULE_003"
+        },
+        {
+            "cnpj_emit": "90000000000033",
+            "cnpj_dest": "90000000000079",
+            "campo_valor": "vProd",
+            "Rota": "DEMO_RULE_004"
+        },
+        {
+            "cnpj_emit": "90000000000018",
+            "cnpj_dest": "90000000000082",
+            "campo_valor": "vProd",
+            "Rota": "DEMO_RULE_005"
+        },
+        {
+            "cnpj_emit": "90000000000001",
+            "cnpj_dest": "90000000000020",
+            "campo_valor": "vProd",
+            "Rota": "DEMO_RULE_006"
+        },
+        {
+            "cnpj_emit": "90000000000001",
+            "cnpj_dest": "90000000000021",
+            "campo_valor": "vProd",
+            "Rota": "DEMO_RULE_007"
+        }
+    ],
+    "padrao": {
+        "campo_valor": "vLiq"
+    }
+}

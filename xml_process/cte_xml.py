@@ -1,0 +1,359 @@
+import os
+from tkinter import messagebox
+import time
+import pyautogui
+import imagens.rotulos as rotulos
+from utils import RepetidorTeclas, wait_and_click, verifica_caps_lock, desativar_caps_lock, falar
+from xml_process.XML import DadosXML, solicitar_caminho_xml
+import json
+
+repetidor = RepetidorTeclas()
+
+def carregar_config_terminal_entrega():
+    """Carrega as configurações de terminais de entrega do JSON."""
+    caminho_json = os.path.join('config', 'terminal_entrega.json')
+    try:
+        with open(caminho_json, 'r', encoding='utf-8') as arquivo:
+            return json.load(arquivo)
+    except FileNotFoundError:
+        falar("Arquivo de terminais de entrega não encontrado")
+        return {"regras_terminal_entrega": [], "regras_client_steel": []}
+    except json.JSONDecodeError:
+        falar("Erro no formato do JSON de terminais de entrega")
+        return {"regras_terminal_entrega": [], "regras_client_steel": []}
+
+
+def processar_terminal_entrega(dados, dt, tempo):
+    """Processa o preenchimento do terminal de entrega baseado no JSON."""
+    config = carregar_config_terminal_entrega()
+    
+    # Primeiro verifica se é CLIENT_STEEL (preenche campo DT)
+    for regra_client_steel in config.get("regras_client_steel", []):
+        if dados.cnpj_dest == regra_client_steel["cnpj_dest"]:
+            wait_and_click(rotulos.imagens_adicionais, deslocamento_x=0)
+            time.sleep(tempo)
+            wait_and_click(rotulos.imagens_nossaref)
+            time.sleep(tempo)
+            pyautogui.write(dt)
+            return True
+    
+    # Depois verifica as regras de terminal de entrega
+    for regra in config.get("regras_terminal_entrega", []):
+        if dados.cnpj_emit == regra["cnpj_emit"] and dados.cnpj_dest == regra["cnpj_dest"]:
+            repetidor.pressionar_tecla('tab', 6)
+            time.sleep(tempo)
+            
+            # Determina qual valor escrever no campo de terminal
+            if regra["tipo_preenchimento"] == "cnpj":
+                if regra["valor"] == "cnpj_dest":
+                    valor_terminal = dados.cnpj_dest
+                elif regra["valor"] == "cnpj_entrega":
+                    valor_terminal = dados.cnpj_entrega
+                else:
+                    # CNPJ fixo definido no JSON
+                    valor_terminal = regra["valor"]
+            elif regra["tipo_preenchimento"] == "codigo":
+                # Código fixo definido no JSON
+                valor_terminal = regra["valor"]
+            else:
+                valor_terminal = regra["valor"]
+            
+            pyautogui.write(valor_terminal)
+            time.sleep(tempo)
+            return True
+    
+    return False
+def carregar_config_pagador_frete():
+    """Carrega as configurações de pagador do frete do JSON."""
+    caminho_json = os.path.join('config', 'pagador_frete.json')
+    try:
+        with open(caminho_json, 'r', encoding='utf-8') as arquivo:
+            return json.load(arquivo)
+    except FileNotFoundError:
+        falar("Arquivo de pagador de frete não encontrado")
+        return {"regras_fixas": []}
+    except json.JSONDecodeError:
+        falar("Erro no formato do JSON de pagador de frete")
+        return {"regras_fixas": []}
+
+
+def obter_pagador_frete(cnpj_emit, cnpj_dest, tomador_frete_nota):
+    """
+    Determina quem é o pagador do frete.
+    
+    Parâmetros:
+    - cnpj_emit: CNPJ do emitente
+    - cnpj_dest: CNPJ do destinatário
+    - tomador_frete_nota: Valor que veio na nota fiscal (0 ou 1)
+    
+    Retorna:
+    - '0' se remetente paga
+    - '1' se destinatário paga
+    """
+    config = carregar_config_pagador_frete()
+    
+    # Verifica se existe regra fixa para essa combinação
+    for regra in config.get("regras_fixas", []):
+        if cnpj_emit == regra["cnpj_emit"] and cnpj_dest == regra["cnpj_dest"]:
+            print(f"✓ Regra fixa encontrada: {regra['descricao']} - Pagador: {'Remetente' if regra['pagador'] == '0' else 'Destinatário'}")
+            return regra["pagador"]
+    
+    # Se não encontrou regra fixa, usa o valor da nota
+    print(f"✓ Sem regra fixa. Usando valor da nota - Pagador: {'Remetente' if tomador_frete_nota == '0' else 'Destinatário'}")
+    return tomador_frete_nota
+
+class ProcessadorXML:
+    @staticmethod
+    def processar_arquivo(placa, dt, tempo):
+        try:
+            # Solicitar o arquivo XML
+            caminho_arquivo = solicitar_caminho_xml()
+            print(f"Caminho do arquivo selecionado: {caminho_arquivo}")
+            if not caminho_arquivo:
+                messagebox.showwarning("Aviso", "Nenhum arquivo selecionado!")
+                return None
+
+            # Criar uma instância de DadosXML e processar o arquivo
+            dados = DadosXML()
+            dados.extrair_informacao(caminho_arquivo)
+
+            caminho_json = r"config/mensagem_rotas.json"
+            
+            with open(caminho_json, 'r', encoding='utf-8') as arquivo_json:
+                dicionario_cnpjs = json.load(arquivo_json)
+            dataemissao = dados.dhRecbto
+            data_formatada = f"{dataemissao[:2]}/{dataemissao[2:4]}"
+            chave_cnpjs = f"{dados.cnpj_emit}-{dados.cnpj_dest}"
+
+            mensagem_resultado = dicionario_cnpjs.get(chave_cnpjs, "Rota não encontrada.")
+            mensagem_final = f"{mensagem_resultado} - Data: {data_formatada} - NF: {dados.nNF}"
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro: {str(e)}")
+            # return None
+
+        # Solicitar confirmação do usuário
+        confirmacao = messagebox.askquestion(
+            "Confirmação",
+            f"Continuar o preenchimento do CTE com a nota de número:\n{dados.nNF} e placa: {placa}\n"
+            f"Por favor, confira o número da nota.\nConfirma o preenchimento?",
+            icon='question'
+        )
+
+        if confirmacao == 'yes':
+            # Continuar com o preenchimento
+            if verifica_caps_lock():
+                desativar_caps_lock()
+                print("Caps Lock estava ativado e foi desativado.")
+            else:
+                print("Caps Lock não está ativado.")
+
+            path_json_faturamento = os.path.join('config', 'tipo_faturamento.json')
+
+            try:
+                with open(path_json_faturamento, 'r', encoding='utf-8') as arquivo:
+                    tipo_faturamento = json.load(arquivo)
+            
+            except FileNotFoundError:
+                falar("Arquivo de faturamento não encontrado")
+                
+            except json.JSONDecodeError:
+                falar("Erro no formato do JSON de faturamento")
+
+            def obter_tipo_faturamento(cnpj_emit, cnpj_dest):
+                """Verifica o tipo de serviço com base no JSON."""
+                for caso in tipo_faturamento["ordem_de_servico"]:
+                    if cnpj_emit == caso["cnpj_emit"] and cnpj_dest == caso["cnpj_dest"]:
+                        return "ordem_de_servico"
+                return "conhecimento_de_transporte"
+            
+            tipo_servico = obter_tipo_faturamento(dados.cnpj_emit, dados.cnpj_dest)
+            falar(f"Manifestando para'{dados.nome_dest}'")
+            time.sleep(2)
+            wait_and_click(rotulos.imagens_faturamento, deslocamento_x=0)
+            time.sleep(0.5)
+            if tipo_servico == "ordem_de_servico":
+                repetidor.pressionar_tecla('down', 2)
+                pyautogui.press('right')
+                repetidor.pressionar_tecla('enter', 1, 2.5)
+            else:  
+                repetidor.pressionar_tecla('down', 2)
+                pyautogui.press('right')
+                repetidor.pressionar_tecla('down', 1, 0.2)
+                repetidor.pressionar_tecla('enter', 1, 2.5)
+            wait_and_click(rotulos.imagens_incluir,deslocamento_x=0)
+            time.sleep(0.5)
+            repetidor.pressionar_tecla('tab',7,0.2)
+            wait_and_click(rotulos.imagens_placa, deslocamento_x=70)
+            time.sleep(tempo)
+            pyautogui.write(placa)
+            time.sleep(tempo)
+            pyautogui.press('tab')
+            time.sleep(tempo)
+                
+            repetidor.pressionar_tecla('enter', 4, 0.3)
+            pagador_frete_correto = obter_pagador_frete(dados.cnpj_emit, dados.cnpj_dest, dados.tomador_frete)
+
+            if pagador_frete_correto == '1':
+                # Destinatário paga o frete
+                wait_and_click(rotulos.imagens_pagador, deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_dest)
+                repetidor.pressionar_tecla('tab', 1, 0.3)
+                repetidor.pressionar_tecla('enter', 1, 0.3)
+                wait_and_click(rotulos.imagens_remetente, deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_emit)
+                repetidor.pressionar_tecla('tab', 1, 0.3)
+                wait_and_click(rotulos.imagens_destinatario, deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_dest)
+            else:
+                # Remetente paga o frete (pagador_frete_correto == '0')
+                wait_and_click(rotulos.imagens_pagador, deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_emit)
+                repetidor.pressionar_tecla('tab', 1, 0.3)
+                repetidor.pressionar_tecla('enter', 1, 0.3)
+                wait_and_click(rotulos.imagens_remetente, deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_emit)
+                repetidor.pressionar_tecla('tab', 1, 0.3)
+                wait_and_click(rotulos.imagens_destinatario, deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_dest)
+            
+            time.sleep(0.5)
+            processar_terminal_entrega(dados, dt, tempo)
+            time.sleep(tempo)
+            wait_and_click(rotulos.imagens_compcarga,deslocamento_x=0)
+            time.sleep(tempo)
+            wait_and_click(rotulos.imagens_insere,deslocamento_x=0)
+            time.sleep(tempo)
+            repetidor.pressionar_tecla('enter',1, 0.3)
+            #numero de série da nota
+            wait_and_click(rotulos.imagens_serienf,deslocamento_x=50)
+            time.sleep(tempo)
+            pyautogui.write(dados.serie_nf)
+            time.sleep(tempo)
+            #numero da nota
+            repetidor.pressionar_tecla('tab', 1, 0.3)
+            pyautogui.write(dados.nNF)
+            time.sleep(tempo)
+            #data e hora de emissão da nota
+            repetidor.pressionar_tecla('tab', 1, 0.3)
+            pyautogui.write(dados.dhRecbto)
+            time.sleep(tempo)
+            #chave de acesso
+            repetidor.pressionar_tecla('tab', 1, 0.3)
+            pyautogui.write(dados.chNFe)
+            time.sleep(tempo)
+            repetidor.pressionar_tecla('tab', 1, 0.3)
+            #produtos aqui
+            caminho_json_produtos = os.path.join('config', 'produtos.json')
+
+            try:
+                with open(caminho_json_produtos, 'r', encoding='utf-8') as arquivo:
+                    produtos = json.load(arquivo)
+                    
+            except FileNotFoundError:
+                falar("Arquivo de produtos não encontrado")
+                # Adicione aqui tratamento de erro ou retorne
+            except json.JSONDecodeError:
+                falar("Erro no formato do JSON de produtos")
+                # Trate erro de formatação
+
+            else:
+                # Só executa se o JSON foi carregado com sucesso
+                produto = getattr(dados, 'produto', None)  # Prevenção para atributo inexistente
+                
+                if produto and produto in produtos:
+                    pyautogui.write(produtos[produto])
+                    time.sleep(tempo)
+                else:
+                    falar(f"Produto '{produto}' não localizado" if produto else "Campo 'produto' vazio")
+            time.sleep(tempo)
+            repetidor.pressionar_tecla('tab', 2, 0.3)
+            pyautogui.write(dados.cfop_text)
+            time.sleep(tempo)
+            repetidor.pressionar_tecla('tab', 2, 0.3)
+
+            caminho_json_peso = os.path.join('config', 'peso_nota.json') 
+
+            with open(caminho_json_peso, 'r', encoding='utf-8') as f:
+                peso_nota = json.load(f)
+
+            campo_peso = None
+
+            for regra in peso_nota['regras']:
+                if dados.cnpj_emit == regra['cnpj_emit'] and dados.cnpj_dest == regra['cnpj_dest']:
+                    campo_peso = regra['campo_peso']
+                    break
+
+            if not campo_peso:
+                campo_peso = peso_nota['padrao']['campo_peso']
+
+            time.sleep(tempo)
+            pyautogui.write(getattr(dados, campo_peso))
+            time.sleep(tempo)
+            repetidor.pressionar_tecla('tab', 1, 0.3)
+            time.sleep(tempo)
+            pyautogui.write(getattr(dados, campo_peso))
+            time.sleep(tempo)
+            repetidor.pressionar_tecla('tab', 1, 0.3)
+            repetidor.pressionar_tecla('enter', 1, 0.3)
+            wait_and_click(rotulos.imagens_valor,deslocamento_x=50)
+            time.sleep(tempo)
+
+            # Carrega o JSON (apenas uma vez)
+            caminho_json_valor = os.path.join('config', 'valor_nota.json')
+            with open(caminho_json_valor, 'r', encoding='utf-8') as g:
+                valor_nota = json.load(g)
+
+            # Determina qual campo de valor usar (vNF ou vProd)
+            campo_valor = None
+            for regra in valor_nota['regras']:
+                if dados.cnpj_emit == regra['cnpj_emit'] and dados.cnpj_dest == regra['cnpj_dest']:
+                    campo_valor = regra['campo_valor']
+                    break
+            if not campo_valor:
+                campo_valor = valor_nota['padrao']['campo_valor']
+
+            # --- LÓGICA REAPROVEITÁVEL ---
+            # Lendo o JSON de faturamento novamente para determinar o tipo de serviço.
+            # Esta seção agora é autossuficiente.
+            path_json_faturamento_local = os.path.join('config', 'tipo_faturamento.json')
+            servico_local = "conhecimento_de_transporte" # Define um padrão
+            try:
+                with open(path_json_faturamento_local, 'r', encoding='utf-8') as arquivo_faturamento:
+                    faturamento_local = json.load(arquivo_faturamento)
+                
+                # Procura a combinação de CNPJs na lista de "ordem_de_servico"
+                for caso in faturamento_local.get("ordem_de_servico", []):
+                    if dados.cnpj_emit == caso.get("cnpj_emit") and dados.cnpj_dest == caso.get("cnpj_dest"):
+                        servico_local = "ordem_de_servico"
+                        break # Encontrou a regra, pode parar de procurar
+            except (FileNotFoundError, json.JSONDecodeError) as e:
+                print(f"Erro ao ler o JSON de faturamento local: {e}")
+                # O código continuará com o padrão "conhecimento_de_transporte" se houver erro
+
+            # Clica na imagem correta com base no tipo de serviço verificado localmente
+            if servico_local == "conhecimento_de_transporte":
+                print("Clicando em 'Valor' para Conhecimento de Transporte.")
+                wait_and_click(rotulos.imagens_valor, deslocamento_x=50)
+            else: # Se for "ordem_de_servico"
+                print("Clicando em 'Valor Mercadoria' para Ordem de Serviço.")
+                wait_and_click(rotulos.imagens_valor_mercadoria_ost_tcb, deslocamento_x=50)
+    
+            # Preenche o valor
+            time.sleep(tempo)
+            pyautogui.write(getattr(dados, campo_valor))
+                
+            repetidor.pressionar_tecla('tab', 1, 0.3)
+            if dados.cnpj_emit == "90000000000001" and dados.cnpj_dest == "90000000000021" or dados.cnpj_emit == "90000000000001" and dados.cnpj_dest == "90000000000020":
+                pyautogui.write("0,01")
+            messagebox.showinfo("Info","Finalizado! \n dados fornecidos foram preenchidos, por favor continue manualmente.")
+        else:
+            messagebox.showinfo("Info","Tarefa cancelada pelo usuário")
+        return mensagem_final
+
+

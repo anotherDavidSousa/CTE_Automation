@@ -1,0 +1,11 @@
+{
+    "regras_fixas": [
+        {
+            "cnpj_emit": "90000000000001",
+            "cnpj_dest": "90000000000021",
+            "pagador": "0",
+            "descricao": "DEMO_RULE_001"
+        }
+    ],
+    "observacao": "Pagador: 0 = Remetente paga | 1 = Destinatário paga. Se a combinação não estiver nas regras_fixas, usa o valor que veio na nota fiscal (campo tomador_frete)."
+}

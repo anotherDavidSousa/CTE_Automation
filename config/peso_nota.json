@@ -1,0 +1,85 @@
+{
+    "regras": [
+        {
+            "cnpj_emit": "90000000000034",
+            "cnpj_dest": "90000000000016",
+            "campo_peso": "pesoqCom"
+        },
+        {
+            "cnpj_emit": "90000000000077",
+            "cnpj_dest": "90000000000019",
+            "campo_peso": "pesoqCom"
+        },
+        {
+            "cnpj_emit": "90000000000034",
+            "cnpj_dest": "90000000000015",
+            "campo_peso": "pesoqCom"
+        },
+        {
+            "cnpj_emit": "90000000000074",
+            "cnpj_dest": "90000000000073",
+            "campo_peso": "pesoqCom"
+        },
+        {
+            "cnpj_emit": "90000000000067",
+            "cnpj_dest": "90000000000075",
+            "campo_peso": "pesoqCom"
+        },
+        {
+            "cnpj_emit": "90000000000072",
+            "cnpj_dest": "90000000000073",
+            "campo_peso": "pesoqCom",
+            "Rota": "DEMO_RULE_001"
+        },
+        {
+            "cnpj_emit": "90000000000072",
+            "cnpj_dest": "90000000000073",
+            "campo_peso": "client_atlas_prod"
+        },
+        {
+            "cnpj_emit": "90000000000071",
+            "cnpj_dest": "90000000000033",
+            "campo_peso": "pesoB",
+            "Rota": "DEMO_RULE_002"
+        },
+        {
+            "cnpj_emit": "90000000000071",
+            "cnpj_dest": "90000000000084",
+            "campo_peso": "pesoB",
+            "Rota": "DEMO_RULE_003"
+        },
+        {
+            "cnpj_emit": "90000000000078",
+            "cnpj_dest": "90000000000073",
+            "campo_peso": "pesoqCom",
+            "Rota": "DEMO_RULE_004"
+        },
+        {
+            "cnpj_emit": "90000000000044",
+            "cnpj_dest": "90000000000073",
+            "campo_peso": "pesoqCom",
+            "Rota": "DEMO_RULE_005"
+        },
+        {
+            "cnpj_emit": "90000000000081",
+            "cnpj_dest": "90000000000073",
+            "campo_peso": "pesoqCom",
+            "Rota": "DEMO_RULE_006"
+        },
+        {
+            "cnpj_emit": "90000000000070",
+            "cnpj_dest": "90000000000030",
+            "campo_peso": "pesoB",
+            "Rota": "DEMO_RULE_007"
+        },
+        {
+            "cnpj_emit": "90000000000034",
+            "cnpj_dest": "90000000000001",
+            "campo_peso": "pesoqCom",
+            "Rota": "DEMO_RULE_008"
+        }
+    ],
+    "padrao": {
+        "campo_peso": "pesoL"
+    }
+}

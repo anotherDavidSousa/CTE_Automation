@@ -1,0 +1,36 @@
+{
+    "ordem_de_servico": [
+        {
+            "cnpj_emit": "90000000000067",
+            "cnpj_dest": "90000000000075"
+        },
+        {
+            "cnpj_emit": "90000000000015",
+            "cnpj_dest": "90000000000014"
+        },
+        {
+            "cnpj_emit": "90000000000084",
+            "cnpj_dest": "90000000000062"
+        },
+        {
+            "cnpj_emit": "90000000000001",
+            "cnpj_dest": "90000000000025",
+            "descricao": "DEMO_RULE_001"
+        },
+        {
+            "cnpj_emit": "90000000000015",
+            "cnpj_dest": "90000000000075"
+        },
+        {
+            "cnpj_emit": "90000000000001",
+            "cnpj_dest": "90000000000020",
+            "descricao": "DEMO_RULE_002"
+        },
+        {
+            "cnpj_emit": "90000000000001",
+            "cnpj_dest": "90000000000021",
+            "descricao": "DEMO_RULE_003"
+        }
+    ],
+    "conhecimento_de_transporte": "padrão"
+}

@@ -1,0 +1,25 @@
+{
+    "regras_terminal_entrega": [
+        {
+            "cnpj_emit": "90000000000025",
+            "cnpj_dest": "90000000000001",
+            "tipo_preenchimento": "cnpj",
+            "valor": "90000000000020",
+            "descricao": "DEMO_RULE_001"
+        },
+        {
+            "cnpj_emit": "90000000000083",
+            "cnpj_dest": "90000000000001",
+            "tipo_preenchimento": "cnpj",
+            "valor": "90000000000001",
+            "descricao": "DEMO_RULE_002"
+        }
+    ],
+    "regras_client_steel": [
+        {
+            "cnpj_dest": "90000000000084",
+            "campo": "dt",
+            "descricao": "DEMO_RULE_003"
+        }
+    ]
+}

@@ -1,0 +1,134 @@
+from tkinter import messagebox
+import time
+import pyautogui
+import imagens.rotulos as rotulos
+from utils import RepetidorTeclas, wait_and_click, verifica_caps_lock, desativar_caps_lock
+from xml_process.XML import DadosXML, solicitar_caminho_xml
+import json
+
+repetidor = RepetidorTeclas()
+
+class ProcessadorXML3:
+    @staticmethod
+    def processar_arquivo_3(placa, dt, tempo):
+        try:
+            # Solicitar o arquivo XML
+            caminho_arquivo = solicitar_caminho_xml()
+            print(f"Caminho do arquivo selecionado: {caminho_arquivo}")
+            if not caminho_arquivo:
+                messagebox.showwarning("Aviso", "Nenhum arquivo selecionado!")
+                return None
+
+            # Criar uma instância de DadosXML e processar o arquivo
+            dados = DadosXML()
+            dados.extrair_informacao(caminho_arquivo)
+
+
+
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro: {str(e)}")
+            # return None
+
+        # Solicitar confirmação do usuário
+        confirmacao = messagebox.askquestion(
+            "Confirmação",
+            f"Continuar o preenchimento do CTE com a nota de número:\n{dados.nNF} e placa: {placa}\n"
+            f"Por favor, confira o número da nota.\nConfirma o preenchimento?",
+            icon='question'
+        )
+
+        if confirmacao == 'yes':
+            # Continuar com o preenchimento
+            if verifica_caps_lock():
+                desativar_caps_lock()
+                print("Caps Lock estava ativado e foi desativado.")
+            else:
+                print("Caps Lock não está ativado.")
+
+            if dados.cnpj_emit == '90000000000015' and dados.cnpj_dest == '90000000000016' or dados.cnpj_emit == '90000000000075' and dados.cnpj_dest =='90000000000015' or dados.cnpj_emit =='90000000000067' and dados.cnpj_dest =='90000000000075':
+                time.sleep(2)
+                wait_and_click(rotulos.imagens_faturamento, deslocamento_x=0)
+                time.sleep(0.5)
+                repetidor.pressionar_tecla('down',2)
+                pyautogui.press('right')
+                repetidor.pressionar_tecla('enter', 1, 2.5)
+            else:
+                time.sleep(2)
+                wait_and_click(rotulos.imagens_faturamento, deslocamento_x=0)
+                time.sleep(0.5)
+                repetidor.pressionar_tecla('down',2)
+                pyautogui.press('right')
+                repetidor.pressionar_tecla('down', 1, 0.2)
+                repetidor.pressionar_tecla('enter', 1, 2.5)
+            wait_and_click(rotulos.imagens_incluir,deslocamento_x=0)
+            time.sleep(0.3)
+            repetidor.pressionar_tecla('tab',7,0.2)
+            wait_and_click(rotulos.imagens_placa, deslocamento_x=70)
+            time.sleep(tempo)
+            pyautogui.write(placa)
+            time.sleep(tempo)
+            pyautogui.press('tab')
+            time.sleep(tempo)
+                # Verifica se o aviso está presente na tela
+            repetidor.pressionar_tecla('enter', 4, 0.3)
+            if dados.tomador_frete == '1':
+                wait_and_click(rotulos.imagens_pagador,deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_dest)
+                repetidor.pressionar_tecla('tab', 1, 0.3)
+                wait_and_click(rotulos.imagens_remetente,deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_emit)
+                repetidor.pressionar_tecla('tab', 1, 0.3)
+                wait_and_click(rotulos.imagens_destinatario,deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_dest)
+            else:
+                wait_and_click(rotulos.imagens_pagador,deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_emit)
+                repetidor.pressionar_tecla('tab', 1, 0.3)
+                repetidor.pressionar_tecla('enter', 1, 0.3)
+                wait_and_click(rotulos.imagens_remetente,deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_emit)
+                repetidor.pressionar_tecla('tab', 1, 0.3)
+                wait_and_click(rotulos.imagens_destinatario,deslocamento_x=60)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_dest)
+            
+            time.sleep(0.5)
+            if dados.cnpj_emit == '90000000000015' and dados.cnpj_dest == '90000000000016':
+                repetidor.pressionar_tecla('tab',6)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_dest)
+                time.sleep(tempo)
+            elif dados.cnpj_dest == '90000000000084':
+                wait_and_click(rotulos.imagens_adicionais,deslocamento_x=0)
+                time.sleep(tempo)
+                #wait_and_click(rotulos.imagens_adicionais,deslocamento_x=100, deslocamento_y=40)
+                wait_and_click(rotulos.imagens_nossaref)
+                time.sleep(tempo)
+                pyautogui.write(dt)
+                #mineração guanhaes para joão correia
+            elif dados.cnpj_emit == '90000000000034' and dados.cnpj_dest == '90000000000015':
+                repetidor.pressionar_tecla('tab',6)
+                time.sleep(tempo)
+                pyautogui.write(dados.cnpj_entrega)
+                time.sleep(tempo)
+            elif dados.cnpj_emit == '90000000000074' and dados.cnpj_dest == '90000000000073':
+                repetidor.pressionar_tecla('tab',6)
+                time.sleep(tempo)
+                pyautogui.write('90000000000021')
+                time.sleep(tempo)
+                #JOAO MONLEVADE X JOAO CORREIA
+            elif dados.cnpj_emit == '90000000000083' and dados.cnpj_dest == '90000000000015':
+                repetidor.pressionar_tecla('tab',6)
+                time.sleep(tempo)
+                pyautogui.write('90000000000021')
+            time.sleep(0.5)
+            repetidor.pressionar_tecla('tab', 1, 0.3)
+            messagebox.showinfo("Info","Finalizado! \n dados fornecidos foram preenchidos, por favor continue manualmente.")
+        else:
+            messagebox.showinfo("Info","Tarefa cancelada pelo usuário")
+
