@@ -58,14 +58,9 @@ O resultado foi um fluxo mais rápido e consistente. A aplicação não substitu
 
 ## Interface / Interface
 
-<!-- Suggested file: docs/screenshots/main-interface.png -->
-<!-- Arquivo sugerido: docs/screenshots/main-interface.png -->
+docs/Interface1.png
+docs/interface_modal.png
 
-<!-- Suggested file: docs/screenshots/xml-workflow.png -->
-<!-- Arquivo sugerido: docs/screenshots/xml-workflow.png -->
-
-<!-- Suggested file: docs/screenshots/erp-automation.png -->
-<!-- Arquivo sugerido: docs/screenshots/erp-automation.png -->
 
 ## Main capabilities / Principais capacidades
 
